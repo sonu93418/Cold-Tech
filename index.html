@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColdTech — We debug hot code and serve cold drinks</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- Minimal Black Header with Navigation -->
+    <nav class="navbar">
+        <div class="nav-logo">ColdTech</div>
+        <div class="nav-menu">
+            <a href="#home" class="nav-link">Home</a>
+            <a href="#collection" class="nav-link">Collection</a>
+            <a href="#coca-cola" class="nav-link">Coca-Cola</a>
+            <a href="#sprite" class="nav-link">Sprite</a>
+            <a href="#redbull" class="nav-link">Red Bull</a>
+            <a href="#fanta" class="nav-link">Fanta</a>
+            <a href="#pepsi" class="nav-link">Pepsi</a>
+        </div>
+        <div class="nav-icons">
+            <button class="nav-icon" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </button>
+            <button class="nav-icon" aria-label="Menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Headline -->
+    <section id="home" class="hero">
+        <div class="hero-backdrop">
+            <div class="hero-glow">ColdTech</div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">ColdTech</h1>
+            <p class="hero-tagline">We debug <span class="hot-text">hot code</span> and serve <span class="cold-text">cold drinks</span>.</p>
+        </div>
+        <div id="hero-can-container"></div>
+        <div class="scroll-indicator">
+            <span>Scroll to explore</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="7 13 12 18 17 13"></polyline>
+                <polyline points="7 6 12 11 17 6"></polyline>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Premium Collection Section -->
+    <section id="collection" class="premium-collection">
+        <div class="collection-header">
+            <h2 class="collection-title">Premium Collection</h2>
+            <p class="collection-subtitle">Discover our range of iconic beverages</p>
+        </div>
+        <div id="collection-container"></div>
+    </section>
+
+    <!-- Coca-Cola Classic Section -->
+    <section id="coca-cola" class="brand-section coca-cola-section">
+        <div class="brand-container">
+            <div class="brand-content">
+                <h1 class="brand-title">Coca-Cola<br><span>Classic</span></h1>
+                <p class="brand-tagline">The Original</p>
+                <p class="brand-description">Since 1886, Coca-Cola has been the world's most beloved soft drink. The perfect balance of sweetness, sparkle, and that unmistakable taste that brings people together.</p>
+                <button class="brand-cta">Discover More</button>
+            </div>
+            <div class="brand-can-display" data-brand="coca-cola"></div>
+        </div>
+    </section>
+
+    <!-- Sprite Section -->
+    <section id="sprite" class="brand-section sprite-section">
+        <div class="brand-container reverse">
+            <div class="brand-can-display" data-brand="sprite"></div>
+            <div class="brand-content">
+                <h1 class="brand-title">Sprite<br><span>Lemon-Lime</span></h1>
+                <p class="brand-tagline">Obey Your Thirst</p>
+                <p class="brand-description">Crisp, clean, and refreshing. Sprite delivers an uplifting citrus taste that cuts through with bold lemon-lime flavor. No caffeine. Just pure refreshment.</p>
+                <button class="brand-cta">Discover More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Red Bull Section -->
+    <section id="redbull" class="brand-section redbull-section">
+        <div class="brand-container">
+            <div class="brand-content">
+                <h1 class="brand-title">Red Bull<br><span>Energy Drink</span></h1>
+                <p class="brand-tagline">Gives You Wings</p>
+                <p class="brand-description">Red Bull vitalizes body and mind. The world's leading energy drink with a unique combination of high quality ingredients that gives you wings.</p>
+                <button class="brand-cta">Discover More</button>
+            </div>
+            <div class="brand-can-display" data-brand="redbull"></div>
+        </div>
+    </section>
+
+    <!-- Fanta Section -->
+    <section id="fanta" class="brand-section fanta-section">
+        <div class="brand-container reverse">
+            <div class="brand-can-display" data-brand="fanta"></div>
+            <div class="brand-content">
+                <h1 class="brand-title">Fanta<br><span>Orange</span></h1>
+                <p class="brand-tagline">Play With Your Food</p>
+                <p class="brand-description">Bright, bubbly, and bursting with orange flavor. Fanta is the fun, fruity drink that brings color and excitement to every moment.</p>
+                <button class="brand-cta">Discover More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pepsi Section -->
+    <section id="pepsi" class="brand-section pepsi-section">
+        <div class="brand-container">
+            <div class="brand-content">
+                <h1 class="brand-title">Pepsi<br><span>Cola</span></h1>
+                <p class="brand-tagline">For The Love Of It</p>
+                <p class="brand-description">Bold, refreshing, and unmistakable. Pepsi delivers the perfect cola taste with smooth flavor that's loved by generations around the world.</p>
+                <button class="brand-cta">Discover More</button>
+            </div>
+            <div class="brand-can-display" data-brand="pepsi"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>COCA-COLA</h3>
+                <p>Taste the Feeling</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Products</h4>
+                    <a href="#">Coca-Cola Original</a>
+                    <a href="#">Coca-Cola Zero</a>
+                    <a href="#">Diet Coke</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="#">About Us</a>
+                    <a href="#">Sustainability</a>
+                    <a href="#">Careers</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Connect</h4>
+                    <a href="#">Contact</a>
+                    <a href="#">Social Media</a>
+                    <a href="#">Press</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 The Coca-Cola Company. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script-premium.js"></script>
+</body>
+</html>
