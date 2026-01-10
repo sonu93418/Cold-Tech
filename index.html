@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <!-- Minimal Black Header with Navigation -->
+    <!-- Minimal Black Header -->
     <nav class="navbar">
         <div class="nav-logo">ColdTech</div>
         <div class="nav-menu">
@@ -23,49 +23,36 @@
             <a href="#fanta" class="nav-link">Fanta</a>
             <a href="#pepsi" class="nav-link">Pepsi</a>
         </div>
-        <div class="nav-icons">
-            <button class="nav-icon" aria-label="Search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
-            </button>
-            <button class="nav-icon" aria-label="Menu">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-        </div>
     </nav>
 
-    <!-- Hero Section with Headline -->
+    <!-- Hero Section with All Brand Cans -->
     <section id="home" class="hero">
         <div class="hero-backdrop">
             <div class="hero-glow">ColdTech</div>
         </div>
         <div class="hero-content">
             <h1 class="hero-title">ColdTech</h1>
-            <p class="hero-tagline">We debug <span class="hot-text">hot code</span> and serve <span class="cold-text">cold drinks</span>.</p>
+            <div class="tech-box">
+                <p class="hero-tagline">We debug <span class="hot-text">hot code</span> and serve <span class="cold-text">cold drinks</span>.</p>
+            </div>
         </div>
-        <div id="hero-can-container"></div>
-        <div class="scroll-indicator">
+        
+        <!-- Premium Collection in Home -->
+        <div class="home-collection">
+            <div class="collection-header">
+                <h2 class="collection-title">Premium Collection</h2>
+                <p class="collection-subtitle">Discover our range of iconic beverages</p>
+            </div>
+            <div id="collection-container"></div>
+        </div>
+        
+        <div class="scroll-indicator" style="display: none;">
             <span>Scroll to explore</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="7 13 12 18 17 13"></polyline>
                 <polyline points="7 6 12 11 17 6"></polyline>
             </svg>
         </div>
-    </section>
-
-    <!-- Premium Collection Section -->
-    <section id="collection" class="premium-collection">
-        <div class="collection-header">
-            <h2 class="collection-title">Premium Collection</h2>
-            <p class="collection-subtitle">Discover our range of iconic beverages</p>
-        </div>
-        <div id="collection-container"></div>
     </section>
 
     <!-- Coca-Cola Classic Section -->
@@ -133,39 +120,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <h3>COCA-COLA</h3>
-                <p>Taste the Feeling</p>
-            </div>
-            <div class="footer-links">
-                <div class="footer-column">
-                    <h4>Products</h4>
-                    <a href="#">Coca-Cola Original</a>
-                    <a href="#">Coca-Cola Zero</a>
-                    <a href="#">Diet Coke</a>
-                </div>
-                <div class="footer-column">
-                    <h4>Company</h4>
-                    <a href="#">About Us</a>
-                    <a href="#">Sustainability</a>
-                    <a href="#">Careers</a>
-                </div>
-                <div class="footer-column">
-                    <h4>Connect</h4>
-                    <a href="#">Contact</a>
-                    <a href="#">Social Media</a>
-                    <a href="#">Press</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 The Coca-Cola Company. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="script-premium.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

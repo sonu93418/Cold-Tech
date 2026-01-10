@@ -5,6 +5,18 @@ let collectionCans = [];
 let brandScenes = {};
 let envMap;
 
+// Mouse tracking for interactive can rotation
+let mouseX = 0;
+let mouseY = 0;
+let targetRotationX = 0;
+let targetRotationY = 0;
+
+// Track mouse movement for interactive effects
+document.addEventListener('mousemove', (event) => {
+    mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+    mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+});
+
 // Initialize Hero Can
 function initHeroCan() {
     const container = document.getElementById('hero-can-container');
@@ -76,16 +88,174 @@ function initHeroCan() {
     animateHero();
 }
 
-// Animate hero can
+// Animate hero can with enhanced smooth floating motion
 function animateHero() {
+    if (!heroCan || !heroRenderer || !heroScene || !heroCamera) return;
+    
     requestAnimationFrame(animateHero);
     
     const time = Date.now() * 0.001;
-    heroCan.rotation.y += 0.008;
-    heroCan.rotation.x = Math.sin(time * 0.2) * 0.08;
-    heroCan.position.y = Math.sin(time * 0.4) * 0.06;
+    
+    // Smooth continuous rotation with subtle speed variation
+    heroCan.rotation.y += 0.008 + Math.sin(time * 0.5) * 0.002;
+    
+    // Mouse-interactive rotation (lerp for smooth following)
+    targetRotationX = mouseY * 0.3;
+    targetRotationY = mouseX * 0.3;
+    
+    // Multi-axis organic tilting with mouse interaction
+    heroCan.rotation.x += (targetRotationX + Math.sin(time * 0.3) * 0.1 - heroCan.rotation.x) * 0.05;
+    heroCan.rotation.z += (targetRotationY * 0.5 + Math.cos(time * 0.4) * 0.06 - heroCan.rotation.z) * 0.05;
+    
+    // Enhanced vertical floating with multiple wave frequencies
+    heroCan.position.y = Math.sin(time * 0.5) * 0.08 + Math.cos(time * 0.3) * 0.04;
+    
+    // Subtle horizontal drift for more dynamic motion
+    heroCan.position.x = Math.sin(time * 0.25) * 0.03 + mouseX * 0.1;
+    
+    // Scale pulsing for breathing effect
+    const scaleVariation = 1 + Math.sin(time * 0.7) * 0.02;
+    heroCan.scale.set(scaleVariation, scaleVariation, scaleVariation);
     
     heroRenderer.render(heroScene, heroCamera);
+}
+
+// Initialize Premium Collection Showcase
+function initCollection() {
+    const container = document.getElementById('collection-container');
+    if (!container) return;
+    
+    collectionScene = new THREE.Scene();
+    collectionScene.background = null;
+    
+    const aspect = container.clientWidth / container.clientHeight;
+    collectionCamera = new THREE.PerspectiveCamera(40, aspect, 0.1, 1000);
+    collectionCamera.position.set(0, 3, 35);
+    collectionCamera.lookAt(0, 0, 0);
+    
+    collectionRenderer = new THREE.WebGLRenderer({ 
+        alpha: true, 
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+    collectionRenderer.setSize(container.clientWidth, container.clientHeight);
+    collectionRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    collectionRenderer.setClearColor(0x000000, 0);
+    collectionRenderer.physicallyCorrectLights = true;
+    collectionRenderer.outputEncoding = THREE.sRGBEncoding;
+    collectionRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    collectionRenderer.toneMappingExposure = 1.3;
+    container.appendChild(collectionRenderer.domElement);
+    
+    // Lighting setup
+    const keyLight = new THREE.SpotLight(0xffffff, 4.5, 60, Math.PI / 8, 0.3);
+    keyLight.position.set(-15, 20, 15);
+    keyLight.castShadow = true;
+    collectionScene.add(keyLight);
+    
+    const rimLight = new THREE.DirectionalLight(0xffffff, 3.0);
+    rimLight.position.set(12, 8, -10);
+    collectionScene.add(rimLight);
+    
+    const fillLight = new THREE.AmbientLight(0xffffff, 0.7);
+    collectionScene.add(fillLight);
+    
+    const accentLight = new THREE.PointLight(0xdc143c, 2.5, 50);
+    accentLight.position.set(0, 10, 20);
+    collectionScene.add(accentLight);
+    
+    // Environment
+    const pmremGenerator = new THREE.PMREMGenerator(collectionRenderer);
+    const envScene = new THREE.Scene();
+    envScene.background = new THREE.Color(0xffffff);
+    const envLight = new THREE.AmbientLight(0xffffff, 1);
+    envScene.add(envLight);
+    collectionScene.environment = pmremGenerator.fromScene(envScene).texture;
+    
+    // Create cans for collection - circular arrangement
+    const canConfigs = [
+        { color: 0xb31b1b, metalColor: 0x6b0000, name: 'Coca-Cola', labelColor: '#ffffff', angle: 0 },
+        { color: 0x0d8a3a, metalColor: 0x085c26, name: 'Sprite', labelColor: '#ffff00', angle: Math.PI * 0.4 },
+        { color: 0x152d6b, metalColor: 0x9a9a9a, name: 'Red Bull', labelColor: '#ffd700', angle: Math.PI * 0.8 },
+        { color: 0xd87000, metalColor: 0xa05500, name: 'Fanta', labelColor: '#ffffff', angle: Math.PI * 1.2 },
+        { color: 0x003d7a, metalColor: 0x001f3d, name: 'Pepsi', labelColor: '#ffffff', angle: Math.PI * 1.6 }
+    ];
+    
+    const orbitRadius = 14;
+    
+    canConfigs.forEach((config, index) => {
+        const can = createCan(config.color, config.metalColor, config.name, config.labelColor);
+        const x = Math.cos(config.angle) * orbitRadius;
+        const z = Math.sin(config.angle) * orbitRadius;
+        can.position.set(x, 0, z);
+        can.rotation.y = -config.angle + Math.PI / 2;
+        can.userData = { 
+            baseY: 0,
+            baseAngle: config.angle,
+            orbitRadius: orbitRadius,
+            rotationSpeed: 0.002,
+            floatOffset: index * Math.PI * 0.4,
+            floatSpeed: 0.5 + Math.random() * 0.3
+        };
+        collectionScene.add(can);
+        collectionCans.push(can);
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        collectionCamera.aspect = width / height;
+        collectionCamera.updateProjectionMatrix();
+        collectionRenderer.setSize(width, height);
+    });
+    
+    animateCollection();
+}
+
+// Animate collection cans
+function animateCollection() {
+    if (!collectionRenderer || !collectionScene || !collectionCamera) return;
+    
+    requestAnimationFrame(animateCollection);
+    
+    const time = Date.now() * 0.001;
+    
+    collectionCans.forEach((can, index) => {
+        if (!can) return;
+        
+        // Circular orbit animation
+        const orbitSpeed = 0.15;
+        const currentAngle = can.userData.baseAngle + time * orbitSpeed;
+        const x = Math.cos(currentAngle) * can.userData.orbitRadius;
+        const z = Math.sin(currentAngle) * can.userData.orbitRadius;
+        
+        // Wave-like vertical motion
+        const waveY = Math.sin(time * can.userData.floatSpeed + can.userData.floatOffset) * 1.5;
+        const waveY2 = Math.cos(time * 0.3 + index) * 0.5;
+        
+        can.position.x = x;
+        can.position.y = can.userData.baseY + waveY + waveY2;
+        can.position.z = z;
+        
+        // Rotate can to face center and add spin
+        can.rotation.y = -currentAngle + Math.PI / 2 + time * can.userData.rotationSpeed;
+        
+        // Dynamic tilt based on position in orbit
+        can.rotation.x = Math.sin(currentAngle + time * 0.4) * 0.15;
+        can.rotation.z = Math.cos(currentAngle + time * 0.3) * 0.1;
+        
+        // Scale pulse for emphasis
+        const scale = 1 + Math.sin(time * 0.8 + can.userData.floatOffset) * 0.05;
+        can.scale.set(scale, scale, scale);
+    });
+    
+    // Camera subtle movement for dynamic feel
+    collectionCamera.position.x = Math.sin(time * 0.1) * 2;
+    collectionCamera.position.y = 3 + Math.cos(time * 0.15) * 1;
+    collectionCamera.lookAt(0, 0, 0);
+    
+    collectionRenderer.render(collectionScene, collectionCamera);
 }
 
 // Create HDR-like environment map
@@ -197,10 +367,10 @@ function createCan(bodyColor, metalColor, brandName, labelColor) {
     // Professional gradient background matching real can lacquer finish
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     const colorHex = `#${bodyColor.toString(16).padStart(6, '0')}`;
-    gradient.addColorStop(0, shadeColor(colorHex, 8));
-    gradient.addColorStop(0.35, colorHex);
+    gradient.addColorStop(0, shadeColor(colorHex, 15));
+    gradient.addColorStop(0.35, shadeColor(colorHex, 5));
     gradient.addColorStop(0.65, colorHex);
-    gradient.addColorStop(1, shadeColor(colorHex, -15));
+    gradient.addColorStop(1, shadeColor(colorHex, -10));
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -215,42 +385,62 @@ function createCan(bodyColor, metalColor, brandName, labelColor) {
     // Main brand logo - authentic commercial typography
     ctx.save();
     ctx.fillStyle = labelColor || '#ffffff';
-    ctx.font = 'bold 380px Arial, Helvetica, sans-serif';
+    ctx.font = 'bold 520px Arial, Helvetica, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetY = 6;
-    ctx.fillText(brandName, canvas.width / 2, canvas.height / 2 - 180);
+    // Add strong outline for better readability
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.lineWidth = 18;
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetY = 8;
+    ctx.strokeText(brandName, canvas.width / 2, canvas.height / 2 - 100);
+    ctx.fillText(brandName, canvas.width / 2, canvas.height / 2 - 100);
     ctx.restore();
     
     // Brand tagline in script style
     ctx.save();
-    ctx.font = 'italic bold 280px Georgia, serif';
+    ctx.font = 'italic bold 380px Georgia, serif';
     ctx.fillStyle = labelColor;
     ctx.globalAlpha = 0.95;
-    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-    ctx.shadowBlur = 10;
-    ctx.fillText(brandName, canvas.width / 2, canvas.height / 2 + 200);
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 12;
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 15;
+    ctx.strokeText(brandName, canvas.width / 2, canvas.height / 2 + 300);
+    ctx.fillText(brandName, canvas.width / 2, canvas.height / 2 + 300);
     ctx.restore();
     
     // Authentic nutritional facts panel
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.font = 'bold 38px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.lineWidth = 3;
+    ctx.font = 'bold 48px Arial';
     ctx.textAlign = 'left';
+    ctx.strokeText('NUTRITION FACTS', 100, canvas.height - 380);
     ctx.fillText('NUTRITION FACTS', 100, canvas.height - 380);
-    ctx.font = '32px Arial';
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.font = '38px Arial';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.strokeText('Serving Size: 330ml', 100, canvas.height - 330);
     ctx.fillText('Serving Size: 330ml', 100, canvas.height - 330);
+    ctx.strokeText('Calories: 140', 100, canvas.height - 290);
     ctx.fillText('Calories: 140', 100, canvas.height - 290);
+    ctx.strokeText('Total Carbs: 39g', 100, canvas.height - 250);
     ctx.fillText('Total Carbs: 39g', 100, canvas.height - 250);
+    ctx.strokeText('Sugars: 39g', 100, canvas.height - 210);
     ctx.fillText('Sugars: 39g', 100, canvas.height - 210);
     
     // Volume and quality information
-    ctx.font = 'bold 42px Arial';
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 52px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 3;
+    ctx.strokeText('330ml ℮', 100, canvas.height - 150);
     ctx.fillText('330ml ℮', 100, canvas.height - 150);
-    ctx.font = '28px Arial';
+    ctx.font = 'bold 32px Arial';
+    ctx.lineWidth = 2;
+    ctx.strokeText('PREMIUM QUALITY • BEST SERVED CHILLED', 100, canvas.height - 100);
     ctx.fillText('PREMIUM QUALITY • BEST SERVED CHILLED', 100, canvas.height - 100);
     
     // Realistic barcode with proper spacing
@@ -274,7 +464,7 @@ function createCan(bodyColor, metalColor, brandName, labelColor) {
     
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
-    texture.repeat.x = -1;
+    texture.repeat.x = 1;
     texture.anisotropy = 16;
     texture.encoding = THREE.sRGBEncoding;
     
@@ -287,14 +477,14 @@ function createCan(bodyColor, metalColor, brandName, labelColor) {
     const bodyGeometry = new THREE.CylinderGeometry(canRadius, canRadius, canHeight, 256);
     const bodyMaterial = new THREE.MeshStandardMaterial({
         map: texture,
-        metalness: 0.75,
-        roughness: 0.28,
-        envMapIntensity: 1.5,
+        metalness: 0.85,
+        roughness: 0.22,
+        envMapIntensity: 2.0,
         emissive: bodyColor,
-        emissiveIntensity: 0.12,
-        emissiveIntensity: 0.08,
-        clearcoat: 0.7,
-        clearcoatRoughness: 0.15
+        emissiveIntensity: 0.25,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.1,
+        color: new THREE.Color(bodyColor).multiplyScalar(1.3)
     });
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
     body.castShadow = true;
@@ -485,24 +675,27 @@ function animateShowcase() {
 // Create individual brand section cans
 function initBrandCans() {
     const brands = [
-        { id: 'coca-cola', color: 0xdc143c, metalColor: 0x8b1a1a, name: 'Coca-Cola', labelColor: '#ffffff', accentColor: 0xff1a1a },
-        { id: 'sprite', color: 0x00cc66, metalColor: 0x00aa55, name: 'Sprite', labelColor: '#ffff00', accentColor: 0x00ff88 },
-        { id: 'redbull', color: 0x0055ff, metalColor: 0x0033cc, name: 'Red Bull', labelColor: '#ffd700', accentColor: 0xffd700 },
-        { id: 'fanta', color: 0xff8800, metalColor: 0xcc6600, name: 'Fanta', labelColor: '#ffffff', accentColor: 0xff9900 },
-        { id: 'pepsi', color: 0x0066ff, metalColor: 0x0044cc, name: 'Pepsi', labelColor: '#ff0000', accentColor: 0x0088ff }
+        { id: 'coca-cola', color: 0xb31b1b, metalColor: 0x6b0000, name: 'Coca-Cola', labelColor: '#ffffff', accentColor: 0xdc143c },
+        { id: 'sprite', color: 0x0d8a3a, metalColor: 0x085c26, name: 'Sprite', labelColor: '#ffff00', accentColor: 0x10b851 },
+        { id: 'redbull', color: 0x152d6b, metalColor: 0x9a9a9a, name: 'Red Bull', labelColor: '#ffd700', accentColor: 0x2563eb },
+        { id: 'fanta', color: 0xd87000, metalColor: 0xa05500, name: 'Fanta', labelColor: '#ffffff', accentColor: 0xff9500 },
+        { id: 'pepsi', color: 0x003d7a, metalColor: 0x001f3d, name: 'Pepsi', labelColor: '#ffffff', accentColor: 0x0066cc }
     ];
     
     brands.forEach(brand => {
         const container = document.querySelector(`[data-brand="${brand.id}"]`);
         if (!container) return;
         
-        // Create scene with dark background but not pitch black
+        // Create scene with transparent background
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x121212);
-        scene.fog = new THREE.Fog(0x121212, 18, 45);
+        scene.background = null;
+        scene.fog = new THREE.Fog(0x000000, 18, 45);
+        
         // 85mm lens equivalent for product photography (narrower FOV for less distortion)
-        const camera = new THREE.PerspectiveCamera(25, 1, 0.1, 1000);
-        camera.position.set(0, 2, 35);
+        const aspect = container.clientWidth / container.clientHeight;
+        const camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 1000);
+        camera.position.set(0, -2, 28);
+        camera.lookAt(0, 1, 0);
         
         const renderer = new THREE.WebGLRenderer({ 
             alpha: true, 
@@ -510,8 +703,8 @@ function initBrandCans() {
             powerPreference: "high-performance",
             precision: "highp"
         });
-        renderer.setSize(600, 700);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setClearColor(0x000000, 0);
         renderer.physicallyCorrectLights = true;
         renderer.outputEncoding = THREE.sRGBEncoding;
@@ -522,7 +715,7 @@ function initBrandCans() {
         container.appendChild(renderer.domElement);
         
         // Low-key dramatic lighting for luxury feel with better illumination
-        const keyLight = new THREE.SpotLight(0xffffff, 5.5, 50, Math.PI / 7, 0.25);
+        const keyLight = new THREE.SpotLight(0xffffff, 6.5, 50, Math.PI / 7, 0.25);
         keyLight.position.set(-12, 18, 12);
         keyLight.castShadow = true;
         keyLight.shadow.mapSize.width = 2048;
@@ -531,14 +724,14 @@ function initBrandCans() {
         keyLight.shadow.camera.far = 50;
         scene.add(keyLight);
         
-        const rimLight = new THREE.DirectionalLight(0xffffff, 3.5);
+        const rimLight = new THREE.DirectionalLight(0xffffff, 4.0);
         rimLight.position.set(10, 6, -12);
         scene.add(rimLight);
         
-        const fillLight = new THREE.AmbientLight(0xffffff, 0.8);
+        const fillLight = new THREE.AmbientLight(0xffffff, 1.0);
         scene.add(fillLight);
         
-        const accentRim = new THREE.DirectionalLight(0xffffff, 2.0);
+        const accentRim = new THREE.DirectionalLight(0xffffff, 2.5);
         accentRim.position.set(-8, 5, -10);
         scene.add(accentRim);
         
@@ -571,11 +764,22 @@ function initBrandCans() {
         
         // Create photorealistic can
         const can = createCan(brand.color, brand.metalColor, brand.name, brand.labelColor);
+        can.position.y = 2.5;
         can.rotation.y = 0.4;
         scene.add(can);
         
+        // Handle window resize
+        const handleResize = () => {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        };
+        window.addEventListener('resize', handleResize);
+        
         // Store for animation
-        brandScenes[brand.id] = { scene, camera, renderer, can };
+        brandScenes[brand.id] = { scene, camera, renderer, can, handleResize };
     });
     
     // Start brand animation
@@ -586,15 +790,19 @@ function initBrandCans() {
 function animateBrands() {
     requestAnimationFrame(animateBrands);
     
+    if (Object.keys(brandScenes).length === 0) return;
+    
     const time = Date.now() * 0.001;
     
     Object.values(brandScenes).forEach(({ scene, camera, renderer, can }) => {
+        if (!scene || !camera || !renderer || !can) return;
+        
         // Asymmetrical rotation with X and Y axes for organic feel
         can.rotation.y += 0.0012;
         can.rotation.x = Math.sin(time * 0.18) * 0.06;
         // Minimal floating (2-3mm)
         const float = Math.sin(time * 0.35) * 0.025;
-        can.position.y = float;
+        can.position.y = 2.5 + float;
         // Subtle Z-axis tilt for inertia
         can.rotation.z = Math.cos(time * 0.15) * 0.012;
         renderer.render(scene, camera);
@@ -603,12 +811,69 @@ function animateBrands() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🥤 ColdTech Loading...');
+    
+    // Initialize hero can (optional - container may not exist)
     initHeroCan();
+    
+    // Initialize premium collection showcase
+    initCollection();
+    
+    // Initialize brand cans in sections
     initBrandCans();
+    
+    // Setup scroll animations
     setupScrollAnimations();
+    
+    // Setup button interactions
     setupBrandButtons();
+    
+    // Setup click-based navigation
+    setupBrandNavigation();
+    
+    // Setup smooth scroll
     setupSmoothScroll();
+    
+    // Setup navbar hide on scroll
+    setupNavbarAutoHide();
+    
+    console.log('✅ ColdTech loaded successfully!');
 });
+
+// Auto-hide navbar on scroll down
+function setupNavbarAutoHide() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    
+    let lastScrollTop = 0;
+    let scrollThreshold = 50;
+    let ticking = false;
+    
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Show navbar when at top
+                if (scrollTop < scrollThreshold) {
+                    navbar.classList.remove('hidden');
+                }
+                // Hide when scrolling down, show when scrolling up
+                else if (scrollTop > lastScrollTop) {
+                    // Scrolling down
+                    navbar.classList.add('hidden');
+                } else {
+                    // Scrolling up
+                    navbar.classList.remove('hidden');
+                }
+                
+                lastScrollTop = scrollTop;
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+}
 
 // Smooth scroll for navigation
 function setupSmoothScroll() {
@@ -628,22 +893,72 @@ function setupSmoothScroll() {
 
 // Scroll-triggered animations
 function setupScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.2,
-        rootMargin: '0px 0px -100px 0px'
-    };
+    // Brand sections are now click-activated, not scroll-based
+    // Keep this function for compatibility
+}
+
+// Setup navigation click handlers to show brand sections
+function setupBrandNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const brandSections = document.querySelectorAll('.brand-section');
+    const heroSection = document.querySelector('.hero');
     
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            
+            // Handle home/collection navigation
+            if (targetId === '#home' || targetId === '#collection') {
+                // Hide all brand sections
+                brandSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                // Show hero section
+                heroSection.style.display = 'flex';
+                heroSection.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            // Handle brand section navigation
+            const targetSection = document.querySelector(targetId);
+            if (targetSection && targetSection.classList.contains('brand-section')) {
+                // Hide hero section
+                heroSection.style.display = 'none';
+                
+                // Hide all other brand sections
+                brandSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show selected brand section
+                targetSection.classList.add('active');
+                
+                // Get brand ID from section
+                const brandId = targetId.replace('#', '');
+                
+                // Update renderer for this brand after a small delay to ensure display is updated
+                setTimeout(() => {
+                    if (brandScenes[brandId]) {
+                        const { renderer, camera, scene } = brandScenes[brandId];
+                        const container = document.querySelector(`[data-brand="${brandId}"]`);
+                        if (container && renderer) {
+                            const width = container.clientWidth;
+                            const height = container.clientHeight;
+                            if (width > 0 && height > 0) {
+                                camera.aspect = width / height;
+                                camera.updateProjectionMatrix();
+                                renderer.setSize(width, height);
+                                renderer.render(scene, camera);
+                            }
+                        }
+                    }
+                }, 50);
+                
+                // Scroll to top smoothly
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
-    }, observerOptions);
-    
-    // Observe all brand sections
-    document.querySelectorAll('.brand-section').forEach(section => {
-        observer.observe(section);
     });
 }
 
@@ -729,19 +1044,47 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Parallax effect on scroll
+// Enhanced parallax effect on scroll with smooth transitions
 let ticking = false;
 window.addEventListener('scroll', () => {
     if (!ticking) {
         window.requestAnimationFrame(() => {
             const scrolled = window.pageYOffset;
             
-            // Hero parallax
+            // Hero parallax with enhanced depth effect
             const heroContent = document.querySelector('.hero-content');
+            const heroGlow = document.querySelector('.hero-glow');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            
             if (heroContent && scrolled < window.innerHeight) {
-                heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
-                heroContent.style.opacity = 1 - (scrolled / window.innerHeight);
+                // Multi-layer parallax for depth
+                heroContent.style.transform = `translateY(${scrolled * 0.4}px) scale(${1 - scrolled / window.innerHeight * 0.1})`;
+                heroContent.style.opacity = 1 - (scrolled / window.innerHeight * 1.2);
+                
+                if (heroGlow) {
+                    heroGlow.style.transform = `translate(-50%, -50%) translateY(${scrolled * 0.2}px)`;
+                    heroGlow.style.opacity = 0.4 - (scrolled / window.innerHeight * 0.3);
+                }
+                
+                if (scrollIndicator) {
+                    scrollIndicator.style.opacity = 1 - (scrolled / (window.innerHeight * 0.3));
+                }
             }
+            
+            // Animate sections on scroll
+            const sections = document.querySelectorAll('.brand-section');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const inView = rect.top < window.innerHeight * 0.75 && rect.bottom > 0;
+                
+                if (inView) {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                } else if (rect.top > window.innerHeight) {
+                    section.style.opacity = '0';
+                    section.style.transform = 'translateY(50px)';
+                }
+            });
             
             ticking = false;
         });
@@ -758,6 +1101,6 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-console.log('🥤 Soda Website Loaded - All soda websites should look like this! 🥤');
+console.log('🥤 ColdTech Loaded - Colorful theme with simple animations! 🥤');
 
 
