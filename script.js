@@ -26,12 +26,13 @@ function initHeroCan() {
     heroScene.background = null;
     heroScene.fog = new THREE.Fog(0x000000, 20, 50);
     heroCamera = new THREE.PerspectiveCamera(
-        28,
+        40,
         container.clientWidth / container.clientHeight,
         0.1,
         1000
     );
-    heroCamera.position.set(0, 2, 25);
+    heroCamera.position.set(0, -2, 20);
+    heroCamera.lookAt(0, 2, 0);
     
     heroRenderer = new THREE.WebGLRenderer({ 
         alpha: true, 
@@ -130,7 +131,7 @@ function initCollection() {
     
     const aspect = container.clientWidth / container.clientHeight;
     collectionCamera = new THREE.PerspectiveCamera(40, aspect, 0.1, 1000);
-    collectionCamera.position.set(0, 3, 35);
+    collectionCamera.position.set(0, 0, 35);
     collectionCamera.lookAt(0, 0, 0);
     
     collectionRenderer = new THREE.WebGLRenderer({ 
@@ -181,16 +182,16 @@ function initCollection() {
         { color: 0x003d7a, metalColor: 0x001f3d, name: 'Pepsi', labelColor: '#ffffff', angle: Math.PI * 1.6 }
     ];
     
-    const orbitRadius = 14;
+    const orbitRadius = 15;
     
     canConfigs.forEach((config, index) => {
         const can = createCan(config.color, config.metalColor, config.name, config.labelColor);
         const x = Math.cos(config.angle) * orbitRadius;
         const z = Math.sin(config.angle) * orbitRadius;
-        can.position.set(x, 0, z);
+        can.position.set(x, -1, z);
         can.rotation.y = -config.angle + Math.PI / 2;
         can.userData = { 
-            baseY: 0,
+            baseY: -1,
             baseAngle: config.angle,
             orbitRadius: orbitRadius,
             rotationSpeed: 0.002,
@@ -470,8 +471,9 @@ function createCan(bodyColor, metalColor, brandName, labelColor) {
     
     // Real-world 330ml can dimensions: 115mm height, 66mm diameter
     // Scale: 1 unit = 1cm, so radius = 3.3cm, height = 11.5cm
-    const canRadius = 3.3;
-    const canHeight = 11.5;
+    // Increased scale for better visibility
+    const canRadius = 4.2;
+    const canHeight = 14.5;
     
     // Can body - vibrant matte-to-gloss premium finish with enhanced color
     const bodyGeometry = new THREE.CylinderGeometry(canRadius, canRadius, canHeight, 256);
@@ -693,9 +695,9 @@ function initBrandCans() {
         
         // 85mm lens equivalent for product photography (narrower FOV for less distortion)
         const aspect = container.clientWidth / container.clientHeight;
-        const camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 1000);
-        camera.position.set(0, -2, 28);
-        camera.lookAt(0, 1, 0);
+        const camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
+        camera.position.set(0, 1, 26);
+        camera.lookAt(0, 0, 0);
         
         const renderer = new THREE.WebGLRenderer({ 
             alpha: true, 
@@ -764,7 +766,7 @@ function initBrandCans() {
         
         // Create photorealistic can
         const can = createCan(brand.color, brand.metalColor, brand.name, brand.labelColor);
-        can.position.y = 2.5;
+        can.position.y = -1;
         can.rotation.y = 0.4;
         scene.add(can);
         
@@ -902,37 +904,79 @@ function setupBrandNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const brandSections = document.querySelectorAll('.brand-section');
     const heroSection = document.querySelector('.hero');
+    const navbar = document.querySelector('.navbar');
+    let currentBrandSection = null;
     
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             
+            // Hide all cans with fade out
+            const allCanDisplays = document.querySelectorAll('.brand-can-display, #collection-container');
+            allCanDisplays.forEach(can => {
+                can.style.opacity = '0';
+                can.style.transition = 'opacity 0.3s ease';
+            });
+            
+            // Hide navbar immediately when clicking brand links
+            if (navbar && targetId !== '#home' && targetId !== '#collection') {
+                navbar.classList.add('hidden');
+            }
+            
             // Handle home/collection navigation
             if (targetId === '#home' || targetId === '#collection') {
                 // Hide all brand sections
                 brandSections.forEach(section => {
                     section.classList.remove('active');
+                    section.style.display = 'none';
                 });
                 // Show hero section
-                heroSection.style.display = 'flex';
-                heroSection.scrollIntoView({ behavior: 'smooth' });
+                if (heroSection) {
+                    heroSection.style.display = 'flex';
+                    setTimeout(() => {
+                        heroSection.scrollIntoView({ behavior: 'smooth' });
+                        // Show collection cans after scroll
+                        const collectionContainer = document.querySelector('#collection-container');
+                        if (collectionContainer) {
+                            collectionContainer.style.opacity = '1';
+                        }
+                    }, 100);
+                }
+                
+                // Show navbar again after scroll
+                setTimeout(() => {
+                    if (navbar) navbar.classList.remove('hidden');
+                }, 1000);
                 return;
             }
             
             // Handle brand section navigation
             const targetSection = document.querySelector(targetId);
             if (targetSection && targetSection.classList.contains('brand-section')) {
+                currentBrandSection = targetSection;
+                
                 // Hide hero section
-                heroSection.style.display = 'none';
+                if (heroSection) {
+                    heroSection.style.display = 'none';
+                }
                 
                 // Hide all other brand sections
                 brandSections.forEach(section => {
                     section.classList.remove('active');
+                    section.style.display = 'none';
                 });
                 
                 // Show selected brand section
-                targetSection.classList.add('active');
+                targetSection.style.display = 'flex';
+                setTimeout(() => {
+                    targetSection.classList.add('active');
+                    // Show the can for this brand
+                    const brandCan = targetSection.querySelector('.brand-can-display');
+                    if (brandCan) {
+                        brandCan.style.opacity = '1';
+                    }
+                }, 400);
                 
                 // Get brand ID from section
                 const brandId = targetId.replace('#', '');
@@ -953,13 +997,40 @@ function setupBrandNavigation() {
                             }
                         }
                     }
-                }, 50);
+                }, 150);
                 
                 // Scroll to top smoothly
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Setup scroll listener for brand sections to show navbar on scroll
+                setupBrandScrollListener(targetSection);
             }
         });
     });
+    
+    // Function to show navbar on scroll in brand sections
+    function setupBrandScrollListener(section) {
+        let scrollTimeout;
+        const scrollHandler = function() {
+            clearTimeout(scrollTimeout);
+            
+            // Show navbar when user scrolls
+            if (navbar) {
+                navbar.classList.remove('hidden');
+            }
+            
+            // Hide navbar again after 2 seconds of no scrolling
+            scrollTimeout = setTimeout(() => {
+                if (section.classList.contains('active')) {
+                    navbar.classList.add('hidden');
+                }
+            }, 2000);
+        };
+        
+        // Remove old listeners and add new one
+        section.removeEventListener('scroll', scrollHandler);
+        section.addEventListener('scroll', scrollHandler);
+    }
 }
 
 // Brand button interactions

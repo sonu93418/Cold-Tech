@@ -36,6 +36,8 @@ html {
     backface-visibility: hidden;
     perspective: 1000px;
     will-change: transform;
+    position: relative;
+    z-index: 1;
 }
 
 /* Modern Unique Navbar Design */
@@ -53,7 +55,7 @@ html {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.7) 100%);
     backdrop-filter: blur(25px) saturate(180%);
     -webkit-backdrop-filter: blur(25px) saturate(180%);
-    z-index: 1000;
+    z-index: 9999;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 
@@ -194,24 +196,6 @@ html {
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 10px rgba(220, 20, 60, 0.8);
 }
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    position: relative;
-    padding: 8px 0;
-}
-
-.nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #dc143c, #00ff88);
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 8px currentColor;
-}
 
 .nav-link:hover {
     color: #ffffff;
@@ -271,7 +255,7 @@ html {
     align-items: center;
     background: linear-gradient(135deg, #1a0000 0%, #2d0a0a 25%, #3d0f0f 50%, #2d0a0a 75%, #1a0000 100%);
     overflow: hidden;
-    padding-top: 140px;
+    padding-top: 120px;
 }
 
 .hero::before {
@@ -355,9 +339,9 @@ html {
     position: relative;
     width: 100%;
     max-width: 1600px;
-    z-index: 5;
-    padding: 80px 40px 100px;
-    text-align: center;
+    z-index: 2;
+    padding: 80px 40px 120px;
+    text-align: left;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 30px;
     margin: 0 auto;
@@ -365,6 +349,7 @@ html {
 
 .home-collection .collection-header {
     margin-bottom: 70px;
+    text-align: center;
 }
 
 .hero-title {
@@ -437,12 +422,13 @@ html {
 
 #hero-can-container {
     position: absolute;
-    bottom: 10%;
+    bottom: 5%;
     left: 50%;
     transform: translateX(-50%);
-    width: 600px;
-    height: 700px;
+    width: 650px;
+    height: 750px;
     z-index: 3;
+    pointer-events: none;
 }
 
 .scroll-indicator {
@@ -571,12 +557,18 @@ html {
 #collection-container {
     width: 100%;
     max-width: 1600px;
-    height: 700px;
-    min-height: 600px;
+    height: 550px;
+    min-height: 550px;
     position: relative;
-    z-index: 1;
+    z-index: 2;
     animation: fadeIn 1.5s ease-out 0.3s both;
     overflow: visible;
+    margin-left: auto;
+    padding-right: 100px;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Individual Brand Sections - Hidden by default */
@@ -618,28 +610,26 @@ html {
 
 .brand-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.2fr;
     gap: 80px;
     max-width: 1400px;
     width: 100%;
     align-items: center;
     position: relative;
     z-index: 2;
-    min-height: calc(100vh - 220px);
-}
-    max-width: 1400px;
-    width: 100%;
-    align-items: center;
-    position: relative;
-    z-index: 2;
+    min-height: 750px;
 }
 
 .brand-container.reverse {
-    direction: rtl;
+    grid-template-columns: 1fr 1.2fr;
 }
 
-.brand-container.reverse > * {
-    direction: ltr;
+.brand-container.reverse .brand-content {
+    order: 1;
+}
+
+.brand-container.reverse .brand-can-display {
+    order: 2;
 }
 
 .brand-content {
@@ -729,15 +719,17 @@ html {
 
 .brand-can-display {
     width: 100%;
-    min-height: 650px;
-    height: 100%;
-    max-height: 85vh;
+    min-height: 700px;
+    height: 700px;
+    max-height: 80vh;
     position: relative;
     animation: fadeIn 1.2s ease-out 0.3s both;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: visible;
+    transition: opacity 0.3s ease;
+    padding: 30px 0;
 }
 
 .brand-can-display canvas {
